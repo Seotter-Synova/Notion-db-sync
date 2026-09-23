@@ -61,7 +61,8 @@ B_DATABASE_ID=yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
 
 ```bash
 node test-notion.js      # 先自检：连通性 + 能否查询
-node sync-db.js          # 正式同步
+node sync-db.js --dry-run   # 只出报告，不写入（建议先跑这个）
+node sync-db.js             # 正式同步：真的创建 / 更新 / 归档
 ```
 
 `test-notion.js` 是**只读**的，随便跑。
@@ -79,7 +80,20 @@ const MIN_A_RECORDS_FOR_ARCHIVE = 5;  // 安全阈值
 
 唯一的保险是"A 端记录数 ≥ 5"——也就是说，只要 A 端返回的记录数不少到 5 条以下，B 端该归档的就会被批量归档。动这两个值之前请先想清楚。
 
-目前**没有 dry-run**。想先看效果，把 `ARCHIVE_MISSING_IN_A` 改成 `false` 跑一次。
+### 先用 dry-run 看一遍
+
+```bash
+node sync-db.js --dry-run
+```
+
+它与正式运行走**完全相同的读取与比对逻辑**，但是：
+
+- 不调用任何 `pages.create` / `pages.update`
+- **归档同样不会执行**
+- 最后打印报告：将新建 / 将更新（逐条列出有差异的字段名）/ 将归档，各带 Sync ID 和标题
+- 每段最多列 30 条，超出会提示"…还有 N 条未列出"
+
+纯只读，可以反复跑。
 
 ## 已知限制
 
@@ -100,4 +114,5 @@ const MIN_A_RECORDS_FOR_ARCHIVE = 5;  // 安全阈值
 
 - `v1.0` / `v1.1`：顺序同步
 - `v1.2`：改为每批 10 条并发
-- `v1.3`：当前版本，与根目录 `sync-db.js` 内容一致
+- `v1.3`：改用 `dotenv` 读取凭据（不再硬编码 token）
+- `v1.4`：当前版本 —— 加入 `--dry-run` 报告模式，与根目录 `sync-db.js` 一致
