@@ -20,6 +20,26 @@ const ARCHIVE_MISSING_IN_A = true;
 
 const MIN_A_RECORDS_FOR_ARCHIVE = 5;
 
+// 每批并发数量：可用 SYNC_BATCH_SIZE 覆盖（Notion API 约 3 req/s，调大前先想清楚）
+const DEFAULT_BATCH_SIZE = 10;
+
+function resolveBatchSize(raw) {
+  if (raw === undefined || raw === "") return DEFAULT_BATCH_SIZE;
+
+  const parsed = Number(raw);
+
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    console.warn(
+      `SYNC_BATCH_SIZE="${raw}" 不是正整数，回退到 ${DEFAULT_BATCH_SIZE}`
+    );
+    return DEFAULT_BATCH_SIZE;
+  }
+
+  return parsed;
+}
+
+const BATCH_SIZE = resolveBatchSize(process.env.SYNC_BATCH_SIZE);
+
 
 
 // =====================================================
@@ -496,8 +516,7 @@ console.log(
   const updates = [];
   const archives = [];
 
-  // 每批并发数量
-  const BATCH_SIZE = 10;
+  // 每批并发数量（见文件顶部 BATCH_SIZE 定义）
 
 
   // =====================================
