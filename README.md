@@ -55,6 +55,8 @@ A_TOKEN=ntn_xxx
 A_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 B_TOKEN=ntn_yyy
 B_DATABASE_ID=yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+# 可选：每批并发数量，默认 10
+SYNC_BATCH_SIZE=10
 ```
 
 ## 运行
@@ -97,9 +99,9 @@ node sync-db.js --dry-run
 
 ## 已知限制
 
-- 无 dry-run、无增量同步（每次全量拉取）
+- 无增量同步（每次全量拉取）；`--dry-run` 只出报告不写入
 - 只归档不删除
-- 并发固定 10，没有速率限制退避
+- 并发默认 10（可用 `SYNC_BATCH_SIZE` 覆盖），还没有速率限制退避
 - 单向：只 A → B
 - 未处理 `relation` / `rollup` / 公式类字段的跨库映射
 
@@ -115,4 +117,5 @@ node sync-db.js --dry-run
 - `v1.0` / `v1.1`：顺序同步
 - `v1.2`：改为每批 10 条并发
 - `v1.3`：改用 `dotenv` 读取凭据（不再硬编码 token）
-- `v1.4`：当前版本 —— 加入 `--dry-run` 报告模式，与根目录 `sync-db.js` 一致
+- `v1.4`：加入 `--dry-run` 报告模式，与根目录 `sync-db.js` 一致
+- `v1.5`：当前版本 —— 每批并发数改为可配置（`SYNC_BATCH_SIZE`），非法值告警并回退默认 10
